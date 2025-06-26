@@ -56,7 +56,7 @@ def get_books_with_prime_suffix():
   new_books = []
   for book in books:
     title = book["title"]
-    match = re.search(r"\d+", title)
+    match = re.search(r"(\d+)$", title)
     if match:
       number = int(match.group())
       
