@@ -18,13 +18,17 @@ This project provides a RESTful API to manage book records in a bookstore or lib
 ## 📁 Project Structure
 
 ```
-
-bookstore/
+bookstore-record-api/
 │
-├── main.py                # FastAPI app and route definitions
-├── services.py            # Business logic and shared data (book records)
 ├── model/
-│   └── book\_request.py    # Pydantic models for request validation
+│   └── book_request.py            
+│
+├── .gitignore                   
+├── LICENSE                        
+├── README.md                      
+├── main.py                        
+├── requirements.txt               
+├── services.py                   
 
 ````
 
@@ -92,9 +96,9 @@ Open in your browser:
 
 ```json
 {
-  "book_id": 101,
-  "book_name": "Python 101",
-  "author_name": "Jane Doe"
+  "book_name": "God don't make mistakes",
+  "author_name": "Olusola Owoso",
+  "book_id": 22
 }
 ```
 
@@ -102,7 +106,7 @@ Open in your browser:
 
 ```json
 {
-  "book_name": "Python 101"
+  "book_name": "Design Patterns 6"
 }
 ```
 
@@ -110,7 +114,7 @@ Open in your browser:
 
 ```json
 {
-  "author_name": "Jane Doe"
+  "author_name": "Andrew Hunt"
 }
 ```
 
