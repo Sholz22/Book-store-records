@@ -1,0 +1,19 @@
+# Book Store Records - .gitignore file
+# Python-related
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# VSCode settings (optional)
+.vscode/
+
+# OS-generated
+.DS_Store
+Thumbs.db

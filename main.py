@@ -1,92 +1,9 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+# from pydantic import BaseModel
 import re
 from datetime import datetime 
-
-
-# Define a request model
-class BookFullRequest(BaseModel):
-    book_name: str
-    author_name: str
-    book_id: int
-
-    def __getitem__(self, item):  # allow dict-style access
-        return getattr(self, item)
-
-class BookRequest(BaseModel):
-    book_name: str
-    author_name: str
-
-    def __getitem__(self, item):  # allow dict-style access  
-        return getattr(self, item)
-
-class BookNameRequest(BaseModel):
-    book_name: str
-
-    def __getitem__(self, item):
-        return getattr(self, item)
-    
-class BookAuthorRequest(BaseModel):
-    author_name: str
-
-    def __getitem__(self, item):
-        return getattr(self, item)
-
-
-books = [
-    {"id": 101, "title": "The Pragmatic Programmer 1", "author": "Andrew Hunt", "in_shelf": True, "times_borrowed": 12},
-    {"id": 203, "title": "Clean Code 4", "author": "Robert C. Martin", "in_shelf": False, "times_borrowed": 12, "borrow_date": datetime(2025, 4, 1)},
-    {"id": 283, "title": "Introduction to Algorithms 5", "author": "Thomas H. Cormen", "in_shelf": True, "times_borrowed": 7},
-    {"id": 428, "title": "Design Patterns 6", "author": "Erich Gamma", "in_shelf": True, "times_borrowed": 4},
-    {"id": 285, "title": "Python Crash Course 2", "author": "Eric Matthes", "in_shelf": False, "times_borrowed": 8, "borrow_date": datetime(2025, 4, 15)},
-    {"id": 628, "title": "Data Science from Scratch 7", "author": "Joel Grus", "in_shelf": True, "times_borrowed": 3},
-    {"id": 773, "title": "You Don't Know JS 3", "author": "Kyle Simpson", "in_shelf": True, "times_borrowed": 6},
-    {"id": 838, "title": "Deep Learning 9", "author": "Ian Goodfellow", "in_shelf": True, "times_borrowed": 2},
-    {"id": 937, "title": "Fluent Python 8", "author": "Luciano Ramalho", "in_shelf": True, "times_borrowed": 12},
-    {"id": 100, "title": "Effective Java 10", "author": "Joshua Bloch", "in_shelf": False, "times_borrowed": 9,"borrow_date": datetime(2025, 4, 25) }]
-
-def get_all_books():
-    return books
-
-
-def is_prime(n):
-    if n <= 1:
-        return False
-    if n == 2:
-        return True
-    if n % 2 == 0:
-        return False
-    for i in range(3, int(n**0.5) + 1, 2):
-        if n % i == 0:
-            return False
-    return True
-
-
-def get_book_by_title(book_title):
-    new_books = []
-    # print(book_title.lower())
-    for book in books:
-      if book_title.lower() == book["title"].lower():
-        # print(book["title"].lower())
-        new_books.append(book)
-    # print(new_books)
-    if len(new_books) == 0:
-      return "Book not Found"
-    return new_books
-
-def pay_fine(present_book):
-   borrowing_limit = 14
-   amount = 500
-   now=datetime.now()
-   borrowed_date = present_book["borrow_date"]
-   difference = now - borrowed_date
-   day_difference = abs(difference.days)
-   if day_difference > borrowing_limit:
-      fine = (day_difference - borrowing_limit) * amount
-   else:
-      fine = 0
-   return fine
-      
+from model.book_request import *
+from services import *
 
 app = FastAPI()
 
@@ -150,16 +67,15 @@ def get_books_with_prime_suffix():
 
 @app.post("/delete-by-name")
 def delete_book_by_name(request:BookNameRequest):
-  index = 0
   status = "Not found"
   title = request["book_name"]
   
-  for book in books:
-    if title.lower() == book["title"].lower():
-      status = "Book Deleted"
-      del books[index]
-      
-    index += 1
+  for index, book in enumerate(books):
+        if title.lower() == book["title"].lower():
+            del books[index]
+            status = "Book Deleted"
+            break 
+
   return {"status": status, "books":books}
 
 @app.post("/borrow-book-by-author")
@@ -177,10 +93,7 @@ def borrow_book_by_author(request:BookAuthorRequest):
           status = "Book not in shelf"
         break
 
-      else:
-        status = "Book Not Found"
-
-  return status
+  return {"status": status}
 
 @app.post("/borrow-book-by-title")
 def borrow_book_by_title(request:BookNameRequest):
@@ -197,10 +110,7 @@ def borrow_book_by_title(request:BookNameRequest):
           status = "Book not in shelf"
           break
 
-      else:
-        status = "Book Not Found"
-
-  return status
+  return {"status": status}
 
 
 @app.post("/return-book-by-author")
@@ -212,16 +122,13 @@ def return_book_by_author(request:BookAuthorRequest):
       if author.lower() == book["author"].lower():
         if book["in_shelf"] == False:
           book["in_shelf"] = True
-          fine=pay_fine(book)
-          status = "Book has been Returned"
+          fine = pay_fine(book)
+          status = "Book has been returned"
         else:
           status = "Book already in shelf"
         break
 
-      else:
-        status = "Book Not Found"
-
-  return {"fine":fine, "status":status}
+  return {"fine": fine, "status":status}
 
 @app.post("/return-book-by-title")
 def return_book_by_title(request:BookNameRequest):
@@ -232,16 +139,13 @@ def return_book_by_title(request:BookNameRequest):
       if title.lower() == book["title"].lower():
         if book["in_shelf"] == False:
           book["in_shelf"] = True
-          fine=pay_fine(book)
-          status = "Book has been Returned"
+          fine = pay_fine(book)
+          status = "Book has been returned"
         else:
           status = "Book already in shelf"
         break
 
-      else:
-        status = "Book Not Found"
-  
-  return {"fine":fine, "status":status}
+  return {"fine": fine, "status": status}
 
 @app.get("/get-borrowed-books")
 def get_borrowed_books():
@@ -264,15 +168,10 @@ def get_available_books():
 
 @app.get("/most-borrowed-book")
 def most_borrowed_book():
-  most_borrowed_book = books[0]
-  for book in books[1:]:
-    if book["times_borrowed"] > most_borrowed_book["times_borrowed"]:
-      most_borrowed_book = book
-  
-  new_books = list(filter(lambda x: x["times_borrowed"] == most_borrowed_book["times_borrowed"], books))       
-  return new_books
+    if not books:
+        return {"status": "No books in the library", "books": []}
 
+    max_borrowed = max(book["times_borrowed"] for book in books)
+    most_borrowed_books = [book for book in books if book["times_borrowed"] == max_borrowed]
 
-# print(borrow_book_by_author({"author_name":"Joel Grus"}))
-# print(all_books())
-# print("hello")
+    return {"status": "Success", "most_borrowed_books": most_borrowed_books}
