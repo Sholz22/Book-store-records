@@ -1,4 +1,3 @@
-
 # 📚 Book Store Record API
 
 A FastAPI-powered backend for managing a simple bookstore's inventory, borrowing, and return system. It supports book addition, retrieval, borrowing/return operations, fine calculation, and prime-suffix-based filtering.
